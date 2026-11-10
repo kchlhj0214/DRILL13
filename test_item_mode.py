@@ -90,5 +90,30 @@ class ItemModeTests(unittest.TestCase):
         self.assertEqual(game_framework.stack, [play_mode])
 
 
+    def test_menu_ignores_gameplay_keys_and_closes_window(self):
+        self.key(play_mode, pico2d.SDLK_i)
+        player = play_mode.boy
+        before = [list(layer) for layer in game_world.world]
+        for key in (pico2d.SDLK_SPACE, pico2d.SDLK_RIGHT, pico2d.SDLK_p):
+            self.key(item_mode, key)
+        self.assertEqual(game_framework.stack, [play_mode, item_mode])
+        self.assertEqual(game_world.world, before)
+        self.assertEqual(player.pressed_keys, set())
+        with patch.object(item_mode, 'get_events', return_value=[SimpleNamespace(type=pico2d.SDL_QUIT)]):
+            item_mode.handle_events()
+        self.assertFalse(game_framework.running)
+
+    def test_repeated_menu_visits_preserve_selection_without_stacking(self):
+        player = play_mode.boy
+        for _ in range(3):
+            self.key(play_mode, pico2d.SDLK_i)
+            self.assertEqual(len(game_framework.stack), 2)
+            self.key(item_mode, pico2d.SDLK_2)
+            self.key(item_mode, pico2d.SDLK_i)
+            self.assertEqual(game_framework.stack, [play_mode])
+            self.assertIs(play_mode.boy, player)
+            self.assertEqual(player.item, 2)
+
 if __name__ == '__main__':
     unittest.main()
+
