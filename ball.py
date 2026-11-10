@@ -1,14 +1,18 @@
-from pico2d import get_canvas_width, load_image
+﻿from pico2d import get_canvas_width, load_image
 
 import game_world
 
 
 class Ball:
-    image = None
+    images = {}
 
-    def __init__(self, x, y, velocity):
-        if Ball.image is None:
-            Ball.image = load_image('ball21x21.png')
+    def __init__(self, x, y, velocity, ball_type=1):
+        if ball_type not in (1, 2):
+            raise ValueError('ball_type must be 1 or 2')
+        if ball_type not in Ball.images:
+            Ball.images[ball_type] = load_image(
+                'ball21x21.png' if ball_type == 1 else 'ball41x41.png')
+        self.image = Ball.images[ball_type]
         self.x, self.y = x, y
         self.velocity = velocity
 
@@ -19,3 +23,4 @@ class Ball:
 
     def draw(self):
         self.image.draw(self.x, self.y)
+
