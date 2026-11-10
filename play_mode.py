@@ -3,6 +3,7 @@ import game_world
 import game_framework
 import title_mode
 import pause_mode
+import item_mode
 from boy import Boy
 from grass import Grass
 
@@ -15,6 +16,9 @@ def handle_events():
             return
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
             game_framework.change_mode(title_mode)
+            return
+        elif event.type == SDL_KEYDOWN and event.key == SDLK_i:
+            game_framework.push_mode(item_mode)
             return
         elif event.type == SDL_KEYDOWN and event.key == SDLK_p:
             game_framework.push_mode(pause_mode)
@@ -61,6 +65,7 @@ def resume():
     boy.dir = 0
     if boy.state == 'RUN':
         boy.stop_run()
+
 
 
 
