@@ -114,6 +114,35 @@ class ItemModeTests(unittest.TestCase):
             self.assertIs(play_mode.boy, player)
             self.assertEqual(player.item, 2)
 
+    def test_resume_clears_movement_released_in_menu(self):
+        player = play_mode.boy
+        self.key(play_mode, pico2d.SDLK_RIGHT)
+        self.assertEqual(player.state, 'RUN')
+        self.key(play_mode, pico2d.SDLK_i)
+        release = SimpleNamespace(type=pico2d.SDL_KEYUP, key=pico2d.SDLK_RIGHT)
+        with patch.object(item_mode, 'get_events', return_value=[release]):
+            item_mode.handle_events()
+        self.key(item_mode, pico2d.SDLK_i)
+        self.assertEqual(player.pressed_keys, set())
+        self.assertEqual(player.state, 'IDLE')
+        x = player.x
+        player.update()
+        self.assertEqual(player.x, x)
+
+    def test_ball_variants_share_cache_and_reject_invalid_types(self):
+        with patch.object(ball, 'load_image', side_effect=lambda path: SimpleNamespace(path=path)) as load:
+            small = ball.Ball(100, 90, 10, 1)
+            another_small = ball.Ball(200, 90, -10, 1)
+            large = ball.Ball(300, 90, 10, 2)
+            self.assertIs(small.image, another_small.image)
+            self.assertIsNot(small.image, large.image)
+            self.assertEqual(load.call_count, 2)
+            for invalid in (0, 3, -1):
+                with self.assertRaises(ValueError):
+                    ball.Ball(100, 90, 10, invalid)
+            self.assertEqual(load.call_count, 2)
+
 if __name__ == '__main__':
     unittest.main()
+
 
